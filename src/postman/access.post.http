@@ -1,0 +1,16 @@
+@url_dev=http://localhost:3005/v1/api
+
+### sign up
+POST {{url_dev}}/shop/signup
+Content-Type: application/json
+x-api-key: 86788c84f6dbef03d3b42fd7145ce6a5628065ecb3e6d65220c706f9cb5e22c26f1bec71233b8ca0fd02cfb9b0e8d4ed64fa4703913cbcfa114641ecb75270e9
+
+{
+    "name": "Shop TIPS",
+    "email": "shiptipjs1@gmail.com",
+    "password": "abc123"
+}
+
+### find all
+GET {{url_dev}}/shop/all
+x-api-key: 86788c84f6dbef03d3b42fd7145ce6a5628065ecb3e6d65220c706f9cb5e22c26f1bec71233b8ca0fd02cfb9b0e8d4ed64fa4703913cbcfa114641ecb75270e9

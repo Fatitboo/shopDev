@@ -1,4 +1,4 @@
-'use-strict'
+'use strict'
 const mongoose = require('mongoose');
 const { countConnect } = require('../helpers/check.connect');
 const { db: { host, name, port } } = require('../configs/config.mongodb')
@@ -7,14 +7,19 @@ class Database {
     constructor() {
         this.connect();
     }
-    connect(type = 'mongodb') {
+    async connect(type = 'mongodb') {
         if (1 === 1) {
             mongoose.set('debug', true);
             mongoose.set('debug', { color: true });
         }
         mongoose.connect(connectionString, { maxPoolSize: 50 })
-            .then(_ => {
+            .then(async _ => {
                 countConnect();
+                // const collections = await mongoose.collections();
+                // for (const collection of collections) {
+                //     await collection.drop();
+                //     console.log(`Dropped collection: ${collection.collectionName}`);
+                //   }
                 console.log("Connect Mongodb successfully!");
             })
             .catch(err => { console.log("Connect fail") })

@@ -1,4 +1,4 @@
-'use-strict'
+'use strict'
 
 // !mdbgum
 const { Schema, Types, model } = require('mongoose'); // Erase if already required
