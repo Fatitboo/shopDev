@@ -7,6 +7,7 @@ const {
   electronic,
   furniture,
 } = require("../models/product.model");
+const { insertInventory } = require("../models/repo/inventory.repo");
 const {
   findAllDraftsForShop,
   findAllPublishedForShop,
@@ -15,8 +16,9 @@ const {
   findAllProducts,
   findProduct,
   updateProductById,
+  publishProductByShop,
 } = require("../models/repo/product.repo");
-const { removeUndefinedObject } = require("../utils");
+const { removeUndefinedObject, updateNestedObjectParser } = require("../utils");
 
 class ProductFactory {
   static productRegistry = {};
@@ -62,8 +64,8 @@ class ProductFactory {
     return await findAllPublishedForShop({ query, limit, skip });
   }
 
-  static async searchProduct({ keySearch }) {
-    return await searchProductByUser(keySearch);
+  static async searchProduct(keySearch) {
+    return await searchProductByUser({keySearch});
   }
 
   static async findAllProducts({
@@ -109,7 +111,17 @@ class Product {
   }
 
   async createProduct(product_id) {
-    return await product.create({ ...this, _id: product_id });
+    const newProduct = await product.create({ ...this, _id: product_id });
+
+    if (newProduct) {
+      await insertInventory({
+        productId: newProduct._id,
+        stock: this.product_quantity,
+        shopid: this.product_shop,
+      });
+    }
+
+    return newProduct;
   }
 
   async updateProduct(productId, bodyUpdate) {
@@ -131,15 +143,24 @@ class Clothing extends Product {
   }
   async updateProduct(productId) {
     //1. remove attr has null underfined
-    console.log("[1]::", this);
+    console.log("* [1]::*", productId, this);
+
     const objectParams = removeUndefinedObject(this);
+
     console.log("* [2]::*", objectParams);
     //2. check xem update o cho nao?
     if (objectParams.product_attributes) {
       // update child
-      await updateProductById({ productId, objectParams, model: clothing });
+      await updateProductById({
+        productId,
+        bodyUpdate: updateNestedObjectParser(objectParams.product_attributes),
+        model: clothing,
+      });
     }
-    const updateProduct = await super.updateProduct(productId, objectParams);
+    const updateProduct = await super.updateProduct(
+      productId,
+      updateNestedObjectParser(objectParams)
+    );
     return updateProduct;
   }
 }
@@ -157,6 +178,28 @@ class Electronic extends Product {
     if (!newProduct) throw new BadRequestError("create new Product error");
     return newProduct;
   }
+  async updateProduct(productId) {
+    //1. remove attr has null underfined
+    console.log("* [1]::*", this);
+
+    const objectParams = removeUndefinedObject(this);
+
+    console.log("* [2]::*", objectParams);
+    //2. check xem update o cho nao?
+    if (objectParams.product_attributes) {
+      // update child
+      await updateProductById({
+        productId,
+        bodyUpdate: updateNestedObjectParser(objectParams.product_attributes),
+        model: clothing,
+      });
+    }
+    const updateProduct = await super.updateProduct(
+      productId,
+      updateNestedObjectParser(objectParams)
+    );
+    return updateProduct;
+  }
 }
 
 class Furniture extends Product {
@@ -170,6 +213,28 @@ class Furniture extends Product {
     const newProduct = await super.createProduct(newFurniture._id);
     if (!newProduct) throw new BadRequestError("create new Furniture error");
     return newProduct;
+  }
+  async updateProduct(productId) {
+    //1. remove attr has null underfined
+    console.log("* [1]::*", this);
+
+    const objectParams = removeUndefinedObject(this);
+
+    console.log("* [2]::*", objectParams);
+    //2. check xem update o cho nao?
+    if (objectParams.product_attributes) {
+      // update child
+      await updateProductById({
+        productId,
+        bodyUpdate: updateNestedObjectParser(objectParams.product_attributes),
+        model: clothing,
+      });
+    }
+    const updateProduct = await super.updateProduct(
+      productId,
+      updateNestedObjectParser(objectParams)
+    );
+    return updateProduct;
   }
 }
 

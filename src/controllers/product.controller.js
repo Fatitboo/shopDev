@@ -79,7 +79,7 @@ class ProductController {
   getListSearchProduct = async (req, res, next) => {
     new SuccessResponse({
       message: "Get list search product success!",
-      metadata: await ProductServicesV2.findAllPublishedForShop(req.params),
+      metadata: await ProductServicesV2.searchProduct(req.params.keySearch),
     }).send(res);
   };
 

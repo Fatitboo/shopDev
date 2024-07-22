@@ -18,6 +18,8 @@ const findAllPublishedForShop = async ({ query, limit, skip }) => {
 };
 
 const searchProductByUser = async ({ keySearch }) => {
+  console.log("🚀 ~ searchProductByUser ~ keySearch:", keySearch)
+  
   const regexSearch = new RegExp(keySearch);
   const results = await product
     .find(
@@ -29,6 +31,7 @@ const searchProductByUser = async ({ keySearch }) => {
     )
     .sort({ score: { $meta: "textScore" } })
     .lean();
+  console.log("🚀 ~ searchProductByUser ~ results:", results)
 
   return results;
 };
@@ -44,9 +47,7 @@ const publishProductByShop = async ({ product_shop, product_id }) => {
   foundShop.isDraft = false;
   foundShop.isPublished = true;
 
-  const { modifiedCount } = await foundShop.update(foundShop);
-
-  return modifiedCount;
+  return await foundShop.save();
 };
 
 const unPublishProductByShop = async ({ product_shop, product_id }) => {
@@ -60,9 +61,7 @@ const unPublishProductByShop = async ({ product_shop, product_id }) => {
   foundShop.isDraft = true;
   foundShop.isPublished = false;
 
-  const { modifiedCount } = await foundShop.update(foundShop);
-
-  return modifiedCount;
+  return await foundShop.save();
 };
 
 const findAllProducts = async ({ limit, sort, page, filter, select }) => {
@@ -80,11 +79,11 @@ const findAllProducts = async ({ limit, sort, page, filter, select }) => {
 };
 
 const findProduct = async ({ product_id, unSelect }) => {
-  return await product.findById(product_id).unSelect(getUnSelectData(unSelect));
+  return await product.findById(product_id).select(getUnSelectData(unSelect));
 };
 
 const updateProductById = async ({
-  productid,
+  productId,
   bodyUpdate,
   model,
   isNew = true,
@@ -112,5 +111,5 @@ module.exports = {
   searchProductByUser,
   findAllProducts,
   findProduct,
-  updateProductById
+  updateProductById,
 };
