@@ -4,6 +4,27 @@ const getInfoData = ({ fields = [], object = {} }) => {
   return _.pick(object, fields);
 };
 
+// ['a','b'] = {a: 1, b: 1}
+const getSelectData = (select = []) => {
+  return Object.fromEntries(select.map((el) => [el, 1]));
+};
+
+// ['a','b'] = {a: 0, b: 0}
+const getUnSelectData = (unselect = []) => {
+  return Object.fromEntries(unselect.map((el) => [el, 0]));
+};
+
+const removeUndefinedObject = (object) => {
+  Object.keys(object).forEach((key) => {
+    if (object[key] && typeof object[key] === "object")
+      removeUndefined(object[key]);
+    else if (object[key] == null) delete object[key];
+  });
+  return object;
+};
 module.exports = {
   getInfoData,
+  getSelectData,
+  getUnSelectData,
+  removeUndefinedObject,
 };

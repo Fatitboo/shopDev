@@ -1,7 +1,7 @@
 const asyncHandler = (fn) => {
-  return (reg, res, next) => {
-    fn(reg, res, next).catch(next);
+  return (req, res, next) => {
+    fn(req, res, next).catch(next);
   };
 };
 
-export default asyncHandler;
+module.exports = {asyncHandler};

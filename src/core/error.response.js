@@ -9,7 +9,7 @@ const ReasonStatusCode = {
   FORBIDDEN: "Bad request error",
   CONFLICT: "Conflict error",
 };
-const { StatusCodes, ReasonPhrases } = require("../utils/index");
+const { StatusCodes, ReasonPhrases } = require("../utils/httpStatusCode");
 
 class ErrorResponse extends Error {
   constructor(message, status) {
@@ -47,8 +47,8 @@ class AuthFailureError extends ErrorResponse {
 
 class NotFoundError extends ErrorResponse {
   constructor(
-    message = ReasonPhrases.NOTFOUND,
-    statusCode = StatusCodes.NOTFOUND
+    message = ReasonPhrases.NOT_FOUND,
+    statusCode = StatusCodes.NOT_FOUND
   ) {
     super(message, statusCode);
   }

@@ -4,7 +4,7 @@ const bcrypt = require("bcrypt");
 const shopModel = require("../models/shop.model");
 const crypto = require("node:crypto");
 const KeyTokenService = require("./keyToken.service");
-const { createTokenPair, verfifyJWT } = require("../auth/authUtils");
+const { createTokenPair, verifyJWT } = require("../auth/authUtils");
 const { getInfoData } = require("../utils");
 const {
   BadRequestError,
@@ -33,7 +33,7 @@ class AccessServices {
     if (!foundShop) {
       throw new BadRequestError("Shop not registered");
     }
-    const match = brypt.compare(password, foundShop.password);
+    const match = bcrypt.compare(password, foundShop.password);
     if (!match) throw new AuthFailureError("Authentication error");
 
     //3. created privateKey, publickey
@@ -44,7 +44,7 @@ class AccessServices {
 
     //4 - generate tokens
     const tokens = await createTokenPair(
-      { userId: userId, email },
+      { userId, email },
       publicKey,
       privateKey
     );
@@ -58,7 +58,7 @@ class AccessServices {
 
     return {
       shop: getInfoData({
-        fileds: ["_id", "name", "email"],
+        fields: ["_id", "name", "email"],
         object: foundShop,
       }),
       tokens,
@@ -130,45 +130,31 @@ class AccessServices {
     return null;
   };
 
-  static logout = async ({ keyStore }) => {
+  static logout = async (keyStore) => {
+    console.log(keyStore);
     return await KeyTokenService.removeKeyById(keyStore._id);
   };
 
-  static handlerRefreshToken = async (refreshToken) => {
-    const foundToken = await KeyTokenService.findByRefreshTokenUsed(
-      refreshToken
-    );
-    if (foundToken) {
-      const { userId, email } = await verifyJWT(
-        refreshToken,
-        foundToken.privateKey
-      );
-      console.log({ userId, email });
+  static handlerRefreshToken = async ({ keyStore, user, refreshToken }) => {
+    const { userId, email } = user;
 
+    if (keyStore.refreshTokensUsed.includes(refreshToken)) {
       await KeyTokenService.deleteKeyById(userId);
-      throw new ForbiddenError("Something wrng happend !! Pls relogin");
+      throw new ForbiddenError("Something wrong happend !! Pls relogin");
     }
 
-    const holderToken = await KeyTokenService.findByRefreshToken({
-      refreshToken,
-    });
-    if (!holderToken) throw new AuthFailureError(" Shop not registeted");
-
-    const { userId, email } = await verifyJWT(
-      refreshToken,
-      holderToken.privateKey
-    );
-    console.log("[2]----", { userId, email });
+    if (keyStore.refreshToken != refreshToken)
+      throw new AuthFailureError(" Shop not registeted");
 
     const foundShop = await findByEmail(email);
-    if (!foundShop) throw new AuthFailureError(" Shop not registeted");
+    if (!foundShop) throw new AuthFailureError(" Shop not registeted 2");
 
     const tokens = await createTokenPair(
       { userid, email },
-      holderToken.publicKey,
-      holderToken.privateKey
+      keyStore.publicKey,
+      keyStore.privateKey
     );
-    await holderToken.update({
+    await keyStore.update({
       $set: {
         refreshToken: tokens.refreshToken,
       },
@@ -178,7 +164,7 @@ class AccessServices {
     });
 
     return {
-      user: { userId, email },
+      user,
       tokens,
     };
   };
