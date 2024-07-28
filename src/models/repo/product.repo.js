@@ -1,12 +1,7 @@
 "use strict";
 
 const { Types } = require("mongoose");
-const {
-  product,
-  clothing,
-  electronic,
-  furniture,
-} = require("../product.model");
+const { product } = require("../product.model");
 const { getSelectData, getUnSelectData } = require("../../utils");
 
 const findAllDraftsForShop = async ({ query, limit, skip }) => {
@@ -18,8 +13,8 @@ const findAllPublishedForShop = async ({ query, limit, skip }) => {
 };
 
 const searchProductByUser = async ({ keySearch }) => {
-  console.log("🚀 ~ searchProductByUser ~ keySearch:", keySearch)
-  
+  console.log("🚀 ~ searchProductByUser ~ keySearch:", keySearch);
+
   const regexSearch = new RegExp(keySearch);
   const results = await product
     .find(
@@ -31,7 +26,7 @@ const searchProductByUser = async ({ keySearch }) => {
     )
     .sort({ score: { $meta: "textScore" } })
     .lean();
-  console.log("🚀 ~ searchProductByUser ~ results:", results)
+  console.log("🚀 ~ searchProductByUser ~ results:", results);
 
   return results;
 };
@@ -102,6 +97,24 @@ const queryProduct = async ({ query, limit, skip }) => {
     .limit(limit)
     .exec();
 };
+const getProductById = async (productId) => {
+  return await product.findOne({ _id: productId });
+};
+
+const checkoutProductByServer = async (products) => {
+  return await Promise.all([
+    ...products.map(async (product) => {
+      const foundProduct = await getProductById(product.productId);
+      if (foundProduct) {
+        return {
+          price: foundProduct.product_price,
+          quantity: product.quantity,
+          producId: product.productId,
+        };
+      }
+    }),
+  ]);
+};
 
 module.exports = {
   findAllDraftsForShop,
@@ -112,4 +125,6 @@ module.exports = {
   findAllProducts,
   findProduct,
   updateProductById,
+  getProductById,
+  checkoutProductByServer,
 };

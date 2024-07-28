@@ -1,8 +1,7 @@
 "use strict";
 const {
-  unGetSelectData,
+  getUnSelectData,
   getSelectData,
-  convertToObjectIdMongodb,
 } = require("../../utils");
 
 const findAllDiscountCodesUnSelect = async ({
@@ -20,7 +19,7 @@ const findAllDiscountCodesUnSelect = async ({
     .sort(sortBy)
     .skip(skip)
     .limit(limit)
-    .select(unGetSelectData(unSelect))
+    .select(getUnSelectData(unSelect))
     .lean();
   return documents;
 };
