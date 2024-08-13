@@ -19,6 +19,7 @@ const {
   publishProductByShop,
 } = require("../models/repo/product.repo");
 const { removeUndefinedObject, updateNestedObjectParser } = require("../utils");
+const NotificationService = require("./notification.service");
 
 class ProductFactory {
   static productRegistry = {};
@@ -124,8 +125,19 @@ class Product {
         stock: this.product_quantity,
         shopid: this.product_shop,
       });
-    }
 
+      await NotificationService.pushNotiToSystem({
+        type: "SHOP-001",
+        receivedId: 1,
+        senderId: this.product_shop,
+        options: {
+          product_name: this.product_name,
+          shope_name: this.product_shop,
+        },
+      })
+        .then((rs) => console.log(rs))
+        .catch(console.error);
+    }
     return newProduct;
   }
 
