@@ -41,7 +41,13 @@ class NotificationService {
           noti_type: 1,
           noti_senderId: 1,
           noti_receivedId: 1,
-          noti_content: 1,
+          noti_content: {
+            $concat: [
+              { $substr: ["$noti_options.shop_name", 0, -1] },
+              "Vua moi them mot san pham moi: ",
+              { $substr: ["$noti_options.product_name", 0, -1] },
+            ],
+          },
           createAt: 1,
           noti_options: 1,
         },
