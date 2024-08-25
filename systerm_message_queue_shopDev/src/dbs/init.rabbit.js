@@ -10,7 +10,9 @@ const connectToRabbitMQ = async () => {
     const channel = await connection.createChannel();
 
     return { channel, connection };
-  } catch (error) {}
+  } catch (error) {
+    console.error("Error connecting to RabbitMQ", error);
+  }
 };
 
 const connectToRabbitMQForTest = async () => {
@@ -28,7 +30,31 @@ const connectToRabbitMQForTest = async () => {
   }
 };
 
+const consumerQueue = async (channel, queueName) => {
+  try {
+    await channel.assertQueue(queueName, { durable: true });
+    console.log("Waiting for messages ... ");
+    channel.consume(
+      queueName,
+      (msg) => {
+        console.log(`Received message: ${queueName}::`, msg.content.toString());
+        // 1. find User folowing taht SHOP
+        // 2. Send message to user
+        // 3. yes, ok ==>> success
+        // 4. error. setup DLX ....
+      },
+      {
+        noAck: true,
+      }
+    );
+  } catch (error) {
+    console.error("error publish message to rabbitMQ::", error);
+    throw error;
+  }
+};
+
 module.exports = {
   connectToRabbitMQ,
   connectToRabbitMQForTest,
+  consumerQueue,
 };
