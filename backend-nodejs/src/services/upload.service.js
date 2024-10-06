@@ -8,7 +8,9 @@ const {
   DeleteBucketCommand,
 } = require("../configs/s3.config");
 const crypto = require("crypto");
-const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
+// const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
+const { getSignedUrl } = require("@aws-sdk/cloudfront-signer");
+const urlImagesPublic = "https://dpntbw049rov9.cloudfront.net";
 class UploadService {
   // 1. upload from  image with S3Client
   static async uploadImageFromLocalS3({ file }) {
@@ -24,13 +26,23 @@ class UploadService {
 
       await s3.send(command);
 
-      const signedUrl = new GetObjectCommand({
-        Bucket: process.env.AWS_BUCKET_NAME,
-        Key: imgName,
-      });
-      const url = await getSignedUrl(s3, signedUrl, { expiresIn: 3600 });
+      // const signedUrl = new GetObjectCommand({
+      //   Bucket: process.env.AWS_BUCKET_NAME,
+      //   Key: imgName,
+      // });
+      // const url = await getSignedUrl(s3, signedUrl, { expiresIn: 3600 });
 
-      return url;
+      const url = getSignedUrl({
+        url: `${urlImagesPublic}/${imgName}`,
+        keyPairId: "K3HK2AHYTWO5ID",
+        dateLessThan: new Date(Date.now() + 1000 * 60),
+        privateKey: process.send.AWS_BUCKET_PUBLIC_KEY_ID,
+      });
+
+      return {
+        url,
+        result,
+      };
     } catch (error) {
       console.error("Error uploading image::", error);
     }
